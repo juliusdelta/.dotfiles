@@ -1,0 +1,491 @@
+#+TITLE: Doom Config
+#+AUTHOR: JD Gonzales
+#+STARTUP: overview
+#+PROPERTY: header-args :tangle "~/.doom.d/config.el"
+
+* Introduction
+These is my current Emacs configuration. It requires
+** Requirements
+- [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
+- [[https://github.com/hlissner/doom-emacs][Doom Emacs]]
+- [[https://www.jetbrains.com/lp/mono/][JetBrains Mono Font]]
+*** Optional
+- [[https://github.com/sharkdp/fd][fd]]
+- [[http://eradman.com/entrproject/][entr]]
+
+* Help & Useful Links
+** Doom
+ Here are some additional functions/macros that could help you configure Doom:
+
+ - `load!' for loading external *.el files relative to this one
+ - `use-package!' for configuring packages
+ - `after!' for running code after a package has loaded
+ - `add-load-path!' for adding directories to the `load-path', relative to
+   this file. Emacs searches the `load-path' when you load packages with
+   `require' or `use-package'.
+ - `map!' for binding new keys
+
+ To get information about any of these functions/macros, move the cursor over
+ the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+ This will open documentation for it, including demos of how they are used.
+
+ You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+ they are implemented.
+** [[https://github.com/hlissner/doom-emacs/blob/develop/docs/modules.org][Module Appendix]]
+* User Info
+#+begin_src emacs-lisp
+(setq user-full-name "JD Gonzales"
+      user-mail-address "jd_gonzales@icloud.com")
+#+end_src
+* Fonts
+#+begin_src emacs-lisp
+;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
+;; are the three important ones:
+;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+;; font string. You generally only need these two:
+;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
+;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
+;;
+;; + `doom-font'
+;; + `doom-variable-pitch-font'
+;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
+;;   presentations or streaming.
+
+(setq doom-font (font-spec :family "JetBrains Mono" :size 13)
+      doom-big-font (font-spec :family "JetBrains Mono" :size 26)
+      doom-variable-pitch-font (font-spec :family "Overpass" :size 13))
+#+end_src
+* Visual/Themes
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-nord)
+(setq doom-themes-treemacs-theme "doom-colors")
+(setq display-line-numbers-type t)
+(setq ns-auto-hide-menu-bar t)
+#+end_src
+* Custom Functions
+** jd/shell-command-maybe
+This detects whether or not a shell command exists on the system and returns `t` or `nil` based on results.
+#+begin_src emacs-lisp
+(defun jd/shell-command-maybe (exe &optional paramstr)
+  "run executable EXE with PARAMSTR, or warn if EXE's not available; eg. (jd/shell-command-maybe \"ls\" \"-l -a\")"
+  (if (executable-find exe) t nil))
+#+end_src
+** jd/get-current-line-number
+#+begin_src emacs-lisp
+(defun jd/get-current-line-number ()
+  "Gets current line number based on `(what-line)` output. I'm sure there's a better way to do this but it's what I got."
+  (car (last (split-string (what-line)))))
+#+end_src
+** jd/replace-in-string
+#+begin_src emacs-lisp
+(defun jd/replace-in-string (old new s)
+  "Replaces OLD with NEW in S all arguments are strings."
+  (declare (pure t) (side-effect-free t))
+  (replace-regexp-in-string (regexp-quote old) new s t t))
+#+end_src
+** jd/remove-ruby-file-spec-suffix
+#+begin_src emacs-lisp
+(defun jd/remove-ruby-file-spec-suffix (file-name)
+  "Just removes `_spec` & `.rb` from ruby files. Pretty specific use case but handy"
+  (jd/replace-in-string ".rb" "" (jd/replace-in-string "_spec" "" file-name)))
+#+end_src
+* Custom Keybindings
+** VTerm
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix-map ("," . "VTerm")
+        :desc "New Multi-Vterm" "," #'multi-vterm
+        :desc "Next Vterm" "n" #'multi-vterm-next
+        :desc "Previous Vterm" "p" #'multi-vterm-prev
+        :desc "Toggle Vterm" "t" #'multi-vterm-dedicated-toggle))
+#+end_src
+** Widnow Management
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix-map ("r" . "jd")
+       :desc "Splitter" "r" 'hydra-splitter/body
+       :desc "Run Command" "c" #'run-command
+       :desc "Ace Window" "w" #'ace-window))
+#+end_src
+** Expand Region
+Maps expand region to 'v' which goes into a minor mode while selection is occuring. `SPC v` will start and subsequent `v` presses will expand the region.
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Expand Region" "v" #'er/expand-region)
+#+end_src
+* Org
+** Org Setup
+#+begin_src emacs-lisp
+(setq org-directory "~/org")
+(after! org
+  (require 'org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  (setq org-directory "~/org"
+        org-agenda-files '("~/org/agenda.org")
+        org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-ellipsis " ▼ "
+        org-log-done 'time
+        org-hide-emphasis-markers t))
+#+end_src
+** Org LaTeX
+It seems like MacOS installs `pdflatex` in `/Library` instead of the normal `usr/local/bin` directory. This ensures that `pdflatex` binary is in `PATH` for emacs.
+- `brew install mactex`
+- `which pdflatex` -> Add to PATH in emacs.
+#+begin_src emacs-lisp
+(setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin"))
+
+(after! org
+  (use-package! ox-extra
+    :config
+    (ox-extras-activate '(latex-header-blocks ignore-headlines))))
+
+(after! org
+  ;; Import ox-latex to get org-latex-classes and other funcitonality
+  ;; for exporting to LaTeX from org
+  (use-package! ox-latex
+    :init
+    ;; code here will run immediately
+    :config
+    ;; code here will run after the package is loaded
+    (setq org-latex-pdf-process
+          '("pdflatex -interaction nonstopmode -output-directory %o %f"
+            "bibtex %b"
+            "pdflatex -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -interaction nonstopmode -output-directory %o %f"))
+    (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
+    ;; (setq org-latex-prefer-user-labels t)
+
+    ;; deleted unwanted file extensions after latexMK
+    (setq org-latex-logfiles-extensions
+          (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "xmpi" "run.xml" "bcf" "acn" "acr" "alg" "glg" "gls" "ist")))
+
+    (unless (boundp 'org-latex-classes)
+      (setq org-latex-classes nil))))
+#+end_src
+** Org Babel
+#+begin_src emacs-lisp
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((sh         . t)
+   (js         . t)
+   (emacs-lisp . t)
+   (javascript . t)
+   (python     . t)
+   (ruby       . t)
+   (dot        . t)
+   (restclient . t)
+   (css        . t)))
+#+end_src
+** Org Journal
+#+begin_src emacs-lisp
+(setq org-journal-date-prefix "#+TITLE: "
+      org-journal-time-prefix "* "
+      org-journal-date-format "%a, %Y-%m-%d"
+      org-journal-file-format "%Y-%m-%d.org")
+#+end_src
+** Org Capture
+There are 3 templates here:
+- Todo entry: This is a normal todo entry
+- Snippet: This is a place I can save handy snippets
+- Code Todo: This not only creates a todo but creates a link to the file to save the todo
+#+begin_src emacs-lisp
+(setq org-capture-templates
+      '(("t" "Todo" entry (file "~/org/agenda.org")
+         "* TODO %?\n  %i\n")
+        ("s" "Code Snippet" entry
+         (file "~/org/snippets.org")
+         ;; Prompt for tag and language
+         "* %?\t%^g\n#+BEGIN_SRC %^{language}\n\n#+END_SRC")
+         ;; Code todos will save a link to the file as well as a TODO
+        ("c" "Code Todo" entry (file "~/org/code-todos.org")
+         "* TODO %?\n  %i\n %a")))
+#+end_src
+* Elfeed Configuration
+This is largely taken from [[https://tecosaur.github.io/emacs-config/config.html#org3f31e38][tecosaur's emacs config]].
+#+begin_src emacs-lisp
+(add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+
+(after! elfeed
+  (elfeed-org)
+  (use-package! elfeed-link)
+
+  (setq elfeed-search-filter "@1-week-ago +unread"
+        elfeed-search-print-entry-function '+rss/elfeed-search-print-entry
+        elfeed-search-title-min-width 80
+        elfeed-show-entry-switch #'pop-to-buffer
+        elfeed-show-entry-delete #'+rss/delete-pane
+        elfeed-show-refresh-function #'+rss/elfeed-show-refresh--better-style
+        shr-max-image-proportion 0.6)
+
+  (add-hook! 'elfeed-show-mode-hook (hide-mode-line-mode 1))
+  (add-hook! 'elfeed-search-update-hook #'hide-mode-line-mode)
+
+  (defface elfeed-show-title-face '((t (:weight ultrabold :slant italic :height 1.5)))
+    "title face in elfeed show buffer"
+    :group 'elfeed)
+  (defface elfeed-show-author-face `((t (:weight light)))
+    "title face in elfeed show buffer"
+    :group 'elfeed)
+  (set-face-attribute 'elfeed-search-title-face nil
+                      :foreground 'nil
+                      :weight 'light)
+
+  (defadvice! +rss-elfeed-wrap-h-nicer ()
+    "Enhances an elfeed entry's readability by wrapping it to a width of
+`fill-column' and centering it with `visual-fill-column-mode'."
+    :override #'+rss-elfeed-wrap-h
+    (let ((inhibit-read-only t)
+          (inhibit-modification-hooks t))
+      (setq-local truncate-lines nil)
+      (setq-local shr-width 120)
+      (setq-local line-spacing 0.2)
+      (setq-local visual-fill-column-center-text t)
+      (visual-fill-column-mode)
+      ;; (setq-local shr-current-font '(:family "Merriweather" :height 1.2))
+      (set-buffer-modified-p nil)))
+
+  (defun +rss/elfeed-search-print-entry (entry)
+    "Print ENTRY to the buffer."
+    (let* ((elfeed-goodies/tag-column-width 40)
+           (elfeed-goodies/feed-source-column-width 30)
+           (title (or (elfeed-meta entry :title) (elfeed-entry-title entry) ""))
+           (title-faces (elfeed-search--faces (elfeed-entry-tags entry)))
+           (feed (elfeed-entry-feed entry))
+           (feed-title
+            (when feed
+              (or (elfeed-meta feed :title) (elfeed-feed-title feed))))
+           (tags (mapcar #'symbol-name (elfeed-entry-tags entry)))
+           (tags-str (concat (mapconcat 'identity tags ",")))
+           (title-width (- (window-width) elfeed-goodies/feed-source-column-width
+                           elfeed-goodies/tag-column-width 4))
+
+           (tag-column (elfeed-format-column
+                        tags-str (elfeed-clamp (length tags-str)
+                                               elfeed-goodies/tag-column-width
+                                               elfeed-goodies/tag-column-width)
+                        :left))
+           (feed-column (elfeed-format-column
+                         feed-title (elfeed-clamp elfeed-goodies/feed-source-column-width
+                                                  elfeed-goodies/feed-source-column-width
+                                                  elfeed-goodies/feed-source-column-width)
+                         :left)))
+
+      (insert (propertize feed-column 'face 'elfeed-search-feed-face) " ")
+      (insert (propertize tag-column 'face 'elfeed-search-tag-face) " ")
+      (insert (propertize title 'face title-faces 'kbd-help title))
+      (setq-local line-spacing 0.2)))
+
+  (defun +rss/elfeed-show-refresh--better-style ()
+    "Update the buffer to match the selected entry, using a mail-style."
+    (interactive)
+    (let* ((inhibit-read-only t)
+           (title (elfeed-entry-title elfeed-show-entry))
+           (date (seconds-to-time (elfeed-entry-date elfeed-show-entry)))
+           (author (elfeed-meta elfeed-show-entry :author))
+           (link (elfeed-entry-link elfeed-show-entry))
+           (tags (elfeed-entry-tags elfeed-show-entry))
+           (tagsstr (mapconcat #'symbol-name tags ", "))
+           (nicedate (format-time-string "%a, %e %b %Y %T %Z" date))
+           (content (elfeed-deref (elfeed-entry-content elfeed-show-entry)))
+           (type (elfeed-entry-content-type elfeed-show-entry))
+           (feed (elfeed-entry-feed elfeed-show-entry))
+           (feed-title (elfeed-feed-title feed))
+           (base (and feed (elfeed-compute-base (elfeed-feed-url feed)))))
+      (erase-buffer)
+      (insert "\n")
+      (insert (format "%s\n\n" (propertize title 'face 'elfeed-show-title-face)))
+      (insert (format "%s\t" (propertize feed-title 'face 'elfeed-search-feed-face)))
+      (when (and author elfeed-show-entry-author)
+        (insert (format "%s\n" (propertize author 'face 'elfeed-show-author-face))))
+      (insert (format "%s\n\n" (propertize nicedate 'face 'elfeed-log-date-face)))
+      (when tags
+        (insert (format "%s\n"
+                        (propertize tagsstr 'face 'elfeed-search-tag-face))))
+      ;; (insert (propertize "Link: " 'face 'message-header-name))
+      ;; (elfeed-insert-link link link)
+      ;; (insert "\n")
+      (cl-loop for enclosure in (elfeed-entry-enclosures elfeed-show-entry)
+               do (insert (propertize "Enclosure: " 'face 'message-header-name))
+               do (elfeed-insert-link (car enclosure))
+               do (insert "\n"))
+      (insert "\n")
+      (if content
+          (if (eq type 'html)
+              (elfeed-insert-html content base)
+            (insert content))
+        (insert (propertize "(empty)\n" 'face 'italic)))
+      (goto-char (point-min))))
+
+  )
+#+end_src
+* Stuff
+#+begin_src emacs-lisp
+(setq auth-sources '("~/.authinfo"))
+#+end_src
+* Change LSP mode Logs
+#+begin_src emacs-lisp
+(setenv "TSSERVER_LOG_FILE" "/tmp/tsserver.log")
+#+end_src
+
+* Hydras
+** Resize Windows
+#+begin_src emacs-lisp
+(defhydra hydra-splitter ()
+  "splitter"
+  ("h" hydra-move-splitter-left)
+  ("j" hydra-move-splitter-down)
+  ("k" hydra-move-splitter-up)
+  ("l" hydra-move-splitter-right))
+
+(defun hydra-move-splitter-left (arg)
+  "Move window splitter left."
+  (interactive "p")
+  (if (let ((windmove-wrap-around))
+        (windmove-find-other-window 'right))
+      (shrink-window-horizontally arg)
+    (enlarge-window-horizontally arg)))
+
+(defun hydra-move-splitter-right (arg)
+  "Move window splitter right."
+  (interactive "p")
+  (if (let ((windmove-wrap-around))
+        (windmove-find-other-window 'right))
+      (enlarge-window-horizontally arg)
+    (shrink-window-horizontally arg)))
+
+(defun hydra-move-splitter-up (arg)
+  "Move window splitter up."
+  (interactive "p")
+  (if (let ((windmove-wrap-around))
+        (windmove-find-other-window 'up))
+      (enlarge-window arg)
+    (shrink-window arg)))
+
+(defun hydra-move-splitter-down (arg)
+  "Move window splitter down."
+  (interactive "p")
+  (if (let ((windmove-wrap-around))
+        (windmove-find-other-window 'up))
+      (shrink-window arg)
+    (enlarge-window arg)))
+#+end_src
+
+* Run Command
+The [[https://github.com/bard/emacs-run-command][Run Command documentation]] provides a lot of examples for adding to the commands list. This is bound to `SPC r c`.
+** Recipe List
+According to the documentation your should use `M-x customize` in order to set this list as it uses the `defcustom` macro, however, Doom Emacs does not support `custom` so I just set it here.
+#+begin_src emacs-lisp
+(setq run-command-experiments
+      '(vterm-run-method))
+
+(setq run-command-recipes
+      '(run-command-recipe-package-json
+        run-command-recipe-rubocop
+        run-command-recipe-jest
+        run-command-recipe-zola-serve
+        run-command-recipe-rspec))
+#+end_src
+** Recipies
+All recipes for Run Command. Format for recipe function name: `run-command-recipe-[NAME]`. The `run-command-recipe` will be removed from the display in the minibuffer.
+*** Automatically detect package.json scripts. Supports Yarn & NPM
+#+begin_src emacs-lisp
+;; Run a script from the project's package.json file. Supports both npm and yarn.
+(defun run-command-recipe-package-json--get-scripts (package-json-file)
+  "Extract NPM scripts from `package-json-file'."
+  (with-temp-buffer
+    (insert-file-contents package-json-file)
+    (let* ((json-data (json-parse-buffer))
+           (script-hash (gethash "scripts" json-data))
+           (scripts '()))
+      (maphash (lambda (key _value) (push key scripts)) script-hash)
+      scripts)))
+
+(defun run-command-recipe-package-json ()
+  (when-let* ((project-dir
+               (locate-dominating-file default-directory "package.json"))
+              (scripts
+               (run-command-recipe-package-json--get-scripts (concat project-dir "package.json")))
+              (script-runner
+               (if (file-exists-p (concat project-dir "yarn.lock")) "yarn" "npm")))
+    (mapcar (lambda (script)
+              (list :command-name script
+                    :command-line (concat script-runner " run " script)
+                    :display script
+                    :working-dir project-dir))
+            scripts)))
+#+end_src
+*** Rubocop
+#+begin_src emacs-lisp
+(defun run-command-recipe-rubocop ()
+  (list
+   (list :command-name "Rubocop"
+         :command-line "bundle exec rubocop -D"
+         :display "Run rubocop on entire project")))
+#+end_src
+
+*** RSpec
+This is an RSpec recipe for running tests. The watch mode ones make use of the `entr` command line tool. If it's not installed they will be removed from the list.
+#+begin_src emacs-lisp
+(defun run-command-recipe-rspec ()
+  (list
+     (list
+      :command-name "RSpec Run File"
+      :command-line (format "bundle exec rspec %s" (buffer-file-name))
+      :working-dir (projectile-project-root)
+      :display "Run RSpec on file")
+     (list
+      :command-name "Rspec Run Single"
+      :command-line (format "bundle exec rspec %s:%s" (buffer-file-name) (jd/get-current-line-number))
+      :working-dir (projectile-project-root)
+      :display "Run RSpec on single block")
+   (when (jd/shell-command-maybe "entr")
+     (list
+      :command-name "RSpec File Watch Mode"
+      :command-line (format "find %s | entr -c bundle exec rspec %s" (buffer-file-name) (buffer-file-name))
+      :working-dir (projectile-project-root)
+      :display "Rerun rspec on file on save"))
+   (when (jd/shell-command-maybe "entr")
+     (list
+      :command-name "Rspec Block Watch Mode"
+      :command-line (format "find %s | entr -c bundle exec rspec %s:%s" (buffer-file-name) (buffer-file-name) (jd/get-current-line-number))
+      :working-dir (projectile-project-root)
+      :display "Rerun rspec on block on save"))
+   (when (and (jd/shell-command-maybe "entr") (jd/shell-command-maybe "fd"))
+     (list
+      :command-name "Rspec Run on Save"
+      :command-line (format "fd %s | entr -c bundle exec rspec %s" (jd/remove-ruby-file-spec-suffix buffer-file-name) (buffer-file-name))
+      :working-dir (projectile-project-root)
+      :display "Run RSpec on source file save"))))
+#+end_src
+*** Jest
+#+begin_src emacs-lisp
+(defun run-command-recipe-jest ()
+  (list
+   (list
+    :command-name "Jest Run Specs"
+    :command-line "yarn test"
+    :working-dir (projectile-project-root)
+    :display "Run Jest Spec")
+   (list
+    :command-name "Jest Run Specs Watch"
+    :command-line "yarn test --watch"
+    :working-dir (projectile-project-root)
+    :display "Run Jest Specs in Watch Mode")))
+#+end_src
+
+*** Zola
+#+begin_src emacs-lisp
+(defun run-command-recipe-zola-serve ()
+  (list
+   (list :command-name "Zola Serve"
+         :command-line "zola serve"
+         :working-dir (projectile-project-root)
+         :display "Run Zola Server locally")))
+#+end_src
+
+* Local Variables
+** Tangle & Reload
+;; Local Variables:
+;; eval: (add-hook 'after-save-hook (lambda ()(if (y-or-n-p "Reload?")(doom/reload))) nil t)
+;; eval: (add-hook 'after-save-hook (lambda ()(if (y-or-n-p "Tangle?")(org-babel-tangle))) nil t)
+;; End:
