@@ -4,7 +4,8 @@
 #+PROPERTY: header-args :tangle "~/.doom.d/config.el"
 
 * Introduction
-These is my current Emacs configuration. It requires
+These is my current Emacs configuration.
+
 ** Requirements
 - [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
 - [[https://github.com/hlissner/doom-emacs][Doom Emacs]]
