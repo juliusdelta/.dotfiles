@@ -10,6 +10,7 @@ These is my current Emacs configuration.
 - [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
 - [[https://github.com/hlissner/doom-emacs][Doom Emacs]]
 - [[https://www.jetbrains.com/lp/mono/][JetBrains Mono Font]]
+- [[https://github.com/BurntSushi/ripgrep][ripgrep]]
 *** Optional
 - [[https://github.com/sharkdp/fd][fd]]
 - [[http://eradman.com/entrproject/][entr]]
@@ -57,6 +58,7 @@ These is my current Emacs configuration.
       doom-variable-pitch-font (font-spec :family "Overpass" :size 13))
 #+end_src
 * Visual/Themes
+** Themes
 #+begin_src emacs-lisp
 (setq doom-theme 'doom-nord)
 (setq doom-themes-treemacs-theme "doom-colors")
