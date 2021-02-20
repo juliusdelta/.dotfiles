@@ -39,6 +39,7 @@ import XMonad.Util.Loggers
 import XMonad.Util.EZConfig (additionalKeysP, additionalMouseBindings)
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (safeSpawn, unsafeSpawn, runInTerm, spawnPipe)
+import XMonad.Util.SpawnOnce
 
 -- Layouts modifiers
 import XMonad.Layout.PerWorkspace (onWorkspace)
@@ -131,7 +132,7 @@ myAdditionalKeys =
   , ("M-<Return>", spawn myTerminal)
 
   -- Launcher
-  , ("M-<Space>", spawn "dmenu_run -fn 'Terminus:size=10' -nb '#292d3e' -nf '#bbc5ff' -sb '#82AAFF' -sf '#292d3e' -p 'dmenu:'")
+  , ("M-<Space>", spawn "dmenu_run -fn 'Terminus:size=10' -nb '#2E3440' -nf '#ECEFF4' -sb '#5E81AC' -sf '#ECEFF4' -p 'apps:'")
 
   , ("M-p", spawn "scrot")
 
@@ -186,6 +187,13 @@ myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm
                  t = 0.95 -h
                  l = 0.95 -w
 #+end_src
+* Auto Start
+#+begin_src haskell
+myStartupHook :: X ()
+myStartupHook = do
+          spawnOnce "nitrogen --restore &"
+          -- spawnOnce "/usr/bin/emacs --daemon &" -- emacs daemon for the emacsclient
+#+end_src
 * Main Event
 #+begin_src haskell
 main = do
@@ -203,13 +211,19 @@ main = do
                         , ppUrgent = xmobarColor "#BF616A" "" . wrap "!" "!"  -- Urgent workspace
                         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
                         }
+    , startupHook = myStartupHook
     , terminal    = myTerminal
     , modMask     = myModMask
     , layoutHook         = myLayoutHook
     , borderWidth        = myBorderWidth
-    , normalBorderColor  = "#292d3e"
-    , focusedBorderColor = "#bbc5ff"
+    , normalBorderColor  = "#D8DEE9"
+    , focusedBorderColor = "#5E81AC"
 
   } `additionalKeysP` myAdditionalKeys
 
 #+end_src
+
+* Local Vars (not tangled)
+;; Local Variables:
+;; eval: (add-hook 'after-save-hook (lambda ()(if (y-or-n-p "Tangle?")(org-babel-tangle))) nil t)
+;; End:

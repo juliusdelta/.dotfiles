@@ -2,7 +2,7 @@
 #+STARTUP: overview
 #+PROPERTY: header-args :tangle "~/.xmobarrc"
 
-* Iniital
+* Configuration
 #+begin_src haskell
 Config {
    -- appearance
@@ -18,7 +18,7 @@ Config {
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = "%UnsafeStdinReader% | %multicpu% | %coretemp% | %memory% | %dynnetwork% }{ %RJTT% | %date% "
+   , template = " %UnsafeStdinReader% | }{ %multicpu% | %coretemp% | %memory% | %dynnetwork% | %RJTT% | %date% "
 
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
@@ -45,43 +45,43 @@ Config {
    , commands =
 
         -- weather monitor
-        [ Run Weather "RJTT" [ "--template", "<tempF>°F"
+        [ Run Weather "RJTT" [ "--template", "<fc=#EBCB8B><fn=1>\xf0c2</fn></fc> <tempF>°F"
                              ] 36000
 
         -- network activity monitor (dynamic interface resolution)
-        , Run DynNetwork     [ "--template" , "<dev>: <tx>kB/s|<rx>kB/s"
+        , Run DynNetwork     [ "--template" , "<fc=#EBCB8B><fn=1>\xf093</fn></fc> <tx>kB/s <fc=#EBCB8B><fn=1>\xf019</fn></fc> <rx>kB/s"
                              , "--Low"      , "1000"       -- units: B/s
                              , "--High"     , "5000"       -- units: B/s
-                             , "--low"      , "darkgreen"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkred"
+                             , "--low"      , "#8FBCBB"
+                             , "--normal"   , "#D08770"
+                             , "--high"     , "#BF616A"
                              ] 10
 
         -- cpu activity monitor
-        , Run MultiCpu       [ "--template" , "Cpu: <total0>%|<total1>%"
+        , Run MultiCpu       [ "--template" , "<fc=#EBCB8B><fn=1>\xf85a</fn></fc> <total>%"
                              , "--Low"      , "50"         -- units: %
                              , "--High"     , "85"         -- units: %
-                             , "--low"      , "darkgreen"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkred"
+                             , "--low"      , "#8FBCBB"
+                             , "--normal"   , "#D08770"
+                             , "--high"     , "#BF616A"
                              ] 10
 
         -- cpu core temperature monitor
-        , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C"
+        , Run CoreTemp       [ "--template" , "<fc=#EBCB8B><fn=1>\xfa0f</fn></fc> <core0>°C|<core1>°C"
                              , "--Low"      , "70"        -- units: °C
                              , "--High"     , "80"        -- units: °C
-                             , "--low"      , "darkgreen"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkred"
+                             , "--low"      , "#8FBCBB"
+                             , "--normal"   , "#D08770"
+                             , "--high"     , "#BF616A"
                              ] 50
 
         -- memory usage monitor
-        , Run Memory         [ "--template" ,"Mem: <usedratio>%"
+        , Run Memory         [ "--template" ,"<fc=#EBCB8B><fn=1>\xf628</fn></fc> <usedratio>%"
                              , "--Low"      , "20"        -- units: %
                              , "--High"     , "90"        -- units: %
-                             , "--low"      , "darkgreen"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkred"
+                             , "--low"      , "#8FBCBB"
+                             , "--normal"   , "#D08770"
+                             , "--high"     , "#BF616A"
                              ] 10
 
         -- time and date indicator
@@ -96,10 +96,6 @@ Config {
         ]
    }
 #+end_src
-
-#+RESULTS:
-: <interactive>:91:4: error: parse error on input ‘}’
-
 * Local Vars (not tangled)
 ;; Local Variables:
 ;; eval: (add-hook 'after-save-hook (lambda ()(if (y-or-n-p "Tangle?")(org-babel-tangle))) nil t)
