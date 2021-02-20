@@ -33,6 +33,19 @@ These is my current Emacs configuration.
 
  You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
  they are implemented.
+** Fonts
+Doom exposes five (optional) variables for controlling fonts in Doom. Here
+are the three important ones:
+They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+font string. You generally only need these two:
+(setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "sans" :size 13))
+
++ `doom-font'
++ `doom-variable-pitch-font'
++ `doom-big-font' -- used for `doom-big-font-mode'; use this for
+  presentations or streaming.
+
 ** [[https://github.com/hlissner/doom-emacs/blob/develop/docs/modules.org][Module Appendix]]
 * User Info
 #+begin_src emacs-lisp
@@ -40,22 +53,17 @@ These is my current Emacs configuration.
       user-mail-address "jd_gonzales@icloud.com")
 #+end_src
 * Fonts
+This checks to see if I'm on Arch Machine or MacOS
 #+begin_src emacs-lisp
-;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
-;; are the three important ones:
-;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
-;; font string. You generally only need these two:
-;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
-;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
-;;
-;; + `doom-font'
-;; + `doom-variable-pitch-font'
-;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
+(if (eq system-type 'darwin)
+    (setq doom-font (font-spec :family "JetBrains Mono" :size 13)
+          doom-big-font (font-spec :family "JetBrains Mono" :size 26)
+          doom-variable-pitch-font (font-spec :family "Overpass" :size 13)))
 
-(setq doom-font (font-spec :family "JetBrains Mono" :size 13)
-      doom-big-font (font-spec :family "JetBrains Mono" :size 26)
-      doom-variable-pitch-font (font-spec :family "Overpass" :size 13))
+(if (eq system-type 'gnu/linux)
+    (setq doom-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 13)
+          doom-big-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 26)
+          doom-variable-pitch-font (font-spec :family "Overpass Nerd Font" :size 13)))
 #+end_src
 * Visual/Themes
 ** Themes
