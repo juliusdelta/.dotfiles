@@ -17,7 +17,7 @@ import qualified XMonad.StackSet as W
 import XMonad.Actions.Minimize (minimizeWindow)
 import XMonad.Actions.Promote
 import XMonad.Actions.RotSlaves (rotSlavesDown, rotAllDown)
-import XMonad.Actions.CopyWindow (kill1, copyToAll, killAllOtherCopies, runOrCopy)
+import XMonad.Actions.CopyWindow (kill1)
 import XMonad.Actions.WindowGo (runOrRaise, raiseMaybe)
 import XMonad.Actions.WithAll (sinkAll, killAll)
 import XMonad.Actions.CycleWS (moveTo, shiftTo, WSType(..), shiftNextScreen, shiftPrevScreen)
