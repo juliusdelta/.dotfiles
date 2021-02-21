@@ -111,8 +111,8 @@ myAdditionalKeys =
   , ("M1-S-<Space>", sendMessage NextLayout)                              -- Switch to next layout
   , ("M-S-<Space>", sendMessage ToggleStruts)                          -- Toggles struts
   , ("M-S-n", sendMessage $ Toggle NOBORDERS)                          -- Toggles noborder
-  , ("M-S-=", sendMessage (Toggle NBFULL) >> sendMessage ToggleStruts) -- Toggles noborder/full
-  , ("M-S-f", sendMessage (T.Toggle "float"))
+  , ("M-S-f", sendMessage (Toggle NBFULL) >> sendMessage ToggleStruts) -- Toggles noborder/full
+  , ("M-S-t", sendMessage (T.Toggle "float"))
   , ("M-S-x", sendMessage $ Toggle REFLECTX)
   , ("M-S-y", sendMessage $ Toggle REFLECTY)
   , ("M-S-m", sendMessage $ Toggle MIRROR)
@@ -134,7 +134,13 @@ myAdditionalKeys =
   -- Launcher
   , ("M-<Space>", spawn "dmenu_run -fn 'Terminus:size=10' -nb '#2E3440' -nf '#ECEFF4' -sb '#5E81AC' -sf '#ECEFF4' -p 'apps:'")
 
+  -- Utils
   , ("M-p", spawn "scrot")
+  , ("C-e l", spawn "xscreensaver-command --lock &")
+
+  -- Emacs
+  , ("C-e e", spawn "emacsclient -c -a 'emacs'")
+  , ("C-e r", spawn "emacsclient -c -a 'emacs' --eval '(elfeed)'")
 
   -- Applications (Alt+Ctrl+[key])
   , ("M-M1-a", spawn (myTerminal ++ " -e alsamixer"))
@@ -192,7 +198,8 @@ myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm
 myStartupHook :: X ()
 myStartupHook = do
           spawnOnce "nitrogen --restore &"
-          -- spawnOnce "/usr/bin/emacs --daemon &" -- emacs daemon for the emacsclient
+          spawnOnce "emacs --daemon &" -- emacs daemon for the emacsclient
+          spawnOnce "picom --experimental-backends &"
 #+end_src
 * Main Event
 #+begin_src haskell

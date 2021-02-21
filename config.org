@@ -494,6 +494,17 @@ This is an RSpec recipe for running tests. The watch mode ones make use of the `
          :display "Run Zola Server locally")))
 #+end_src
 
+*** XMonad/XMobar
+#+begin_src emacs-lisp
+(defun run-command-recipe-xmonad ()
+  (list
+   (when (jd/shell-command-maybe "xmonad")
+     (list
+      :command-name "Recompile"
+      :command-line "xmonad --recompile"
+      :work-dir "~/$HOME"
+      :display: "Recompile XMonad"))))
+#+end_src
 * Local Variables
 ** Tangle & Reload
 ;; Local Variables:
