@@ -6,12 +6,12 @@
 #+begin_src haskell
 Config {
    -- appearance
-     font =         "xft:JetBrainsMono Nerd Font Mono:pixelsize=13:bold:antialias=true:hinting=true"
-   , additionalFonts = ["xft:JetBrainsMono Nerd Font Mono:size=13:bold:antialias=true:hinting=true"]
-   , textOffsets = [16]
+     font =         "xft:JetBrainsMono Nerd Font Mono:pixelsize=14:bold:antialias=true:hinting=true"
+   , additionalFonts = ["xft:JetBrainsMono Nerd Font Mono:size=14:bold:antialias=true:hinting=true"]
+   , textOffsets = [26]
    , bgColor =      "#2E3440"
    , fgColor =      "#ECEFF4"
-   , position =     Top
+   , position =     Static { xpos = 0, ypos = 0, width = 3840, height = 32 }
    , border =       BottomB
    , borderColor =  "#646464"
 

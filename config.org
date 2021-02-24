@@ -61,9 +61,9 @@ This checks to see if I'm on Arch Machine or MacOS
           doom-variable-pitch-font (font-spec :family "Overpass" :size 13)))
 
 (if (eq system-type 'gnu/linux)
-    (setq doom-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 13)
-          doom-big-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 26)
-          doom-variable-pitch-font (font-spec :family "Overpass Nerd Font" :size 13)))
+    (setq doom-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 16)
+          doom-big-font (font-spec :family "JetBrainsMono Nerd Font Mono" :size 30)
+          doom-variable-pitch-font (font-spec :family "Overpass Nerd Font" :size 16)))
 #+end_src
 * Visual/Themes
 ** Themes
@@ -72,6 +72,7 @@ This checks to see if I'm on Arch Machine or MacOS
 (setq doom-themes-treemacs-theme "doom-colors")
 (setq display-line-numbers-type t)
 (setq ns-auto-hide-menu-bar t)
+(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 #+end_src
 * Custom Functions
 ** jd/shell-command-maybe

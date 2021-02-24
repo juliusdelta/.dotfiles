@@ -132,21 +132,21 @@ myAdditionalKeys =
   , ("M-<Return>", spawn myTerminal)
 
   -- Launcher
-  , ("M-<Space>", spawn "dmenu_run -fn 'Terminus:size=10' -nb '#2E3440' -nf '#ECEFF4' -sb '#5E81AC' -sf '#ECEFF4' -p 'apps:'")
+  -- , ("M-<Space>", spawn "dmenu_run -fn 'Terminus:size=10' -nb '#2E3440' -nf '#ECEFF4' -sb '#5E81AC' -sf '#ECEFF4' -p 'apps:'")
+  , ("M-<Space>", spawn "rofi -show run")
 
   -- Utils
   , ("M-p", spawn "scrot")
-  , ("C-e l", spawn "xscreensaver-command --lock &")
-
-  -- Emacs
-  , ("C-e e", spawn "emacsclient -c -a 'emacs'")
-  , ("C-e r", spawn "emacsclient -c -a 'emacs' --eval '(elfeed)'")
+  , ("C-e l", spawn "~/.config/rofi/powermenu.sh")
 
   -- Applications (Alt+Ctrl+[key])
+  , ("C-e e", spawn "emacsclient -c -a 'emacs'")
+  , ("C-e r", spawn "emacsclient -c -a 'emacs' --eval '(elfeed)'")
+  , ("C-e v", spawn (myTerminal ++ " -e ncpamixer"))
+  , ("C-e s", spawn (myTerminal ++ " -e spt"))
+
   , ("M-M1-a", spawn (myTerminal ++ " -e alsamixer"))
-  , ("M-M1-c", spawn (myTerminal ++ " -e cmus"))
-  , ("M-M1-e", spawn (myTerminal ++ " -e gotop"))
-  , ("M-M1-i", spawn (myTerminal ++ " -e top"))
+  , ("M-M1-e", spawn (myTerminal ++ " -e htop"))
   ]
 #+end_src
 * Hooks
@@ -200,6 +200,8 @@ myStartupHook = do
           spawnOnce "nitrogen --restore &"
           spawnOnce "emacs --daemon &" -- emacs daemon for the emacsclient
           spawnOnce "picom --experimental-backends &"
+          spawnOnce "dunst &"
+          spawnOnce "light-locker &"
 #+end_src
 * Main Event
 #+begin_src haskell
