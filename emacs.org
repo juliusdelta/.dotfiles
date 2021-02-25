@@ -330,10 +330,6 @@ This is largely taken from [[https://tecosaur.github.io/emacs-config/config.html
 
   )
 #+end_src
-* Stuff
-#+begin_src emacs-lisp
-(setq auth-sources '("~/.authinfo"))
-#+end_src
 * Change LSP mode Logs
 #+begin_src emacs-lisp
 (setenv "TSSERVER_LOG_FILE" "/tmp/tsserver.log")
@@ -387,8 +383,8 @@ The [[https://github.com/bard/emacs-run-command][Run Command documentation]] pro
 ** Recipe List
 According to the documentation your should use `M-x customize` in order to set this list as it uses the `defcustom` macro, however, Doom Emacs does not support `custom` so I just set it here.
 #+begin_src emacs-lisp
-(setq run-command-experiments
-      '(vterm-run-method))
+;; (setq run-command-experiments
+;;       '(vterm-run-method))
 
 (setq run-command-recipes
       '(run-command-recipe-package-json

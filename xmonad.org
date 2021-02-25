@@ -72,10 +72,14 @@ myFont          = "xft:JetBrainsMono Nerd Font Mono:pixelsize=13:bold:antialias=
 myModMask       = mod4Mask  -- Sets modkey to super/windows key
 myTerminal      = "kitty"   -- Sets default terminal
 myTextEditor    = "emacs"   -- Sets default text editor
-myBorderWidth   = 2         -- Sets border width for windows
+myBorderWidth   = 4         -- Sets border width for windows
 #+end_src
 * Keybindings
 #+begin_src haskell
+-- Represents `meh` key: Alt-Shift-Ctrl
+meh :: String
+meh = "M1-S-C-<Space> " -- Final whitespace is mandatory
+
 myAdditionalKeys =
   -- Xmonad Base
   [ ("M-C-r", spawn "xmonad --recompile")
@@ -124,10 +128,6 @@ myAdditionalKeys =
   , ("M-S-;", sendMessage zoomReset)
   , ("M-;", sendMessage ZoomFullToggle)
 
-  --- Scratchpads
-  -- , ("M-C-<Return>", namedScratchpadAction myScratchPads "terminal")
-  -- , ("M-C-c", namedScratchpadAction myScratchPads "cmus")
-
   -- Open Terminal
   , ("M-<Return>", spawn myTerminal)
 
@@ -137,23 +137,27 @@ myAdditionalKeys =
 
   -- Utils
   , ("M-p", spawn "scrot")
-  , ("C-e l", spawn "~/.config/rofi/powermenu.sh")
 
-  -- Applications (Alt+Ctrl+[key])
-  , ("C-e e", spawn "emacsclient -c -a 'emacs'")
-  , ("C-e r", spawn "emacsclient -c -a 'emacs' --eval '(elfeed)'")
-  , ("C-e v", spawn (myTerminal ++ " -e ncpamixer"))
-  , ("C-e s", spawn (myTerminal ++ " -e spt"))
-
-  , ("M-M1-a", spawn (myTerminal ++ " -e alsamixer"))
-  , ("M-M1-e", spawn (myTerminal ++ " -e htop"))
+  -- Applications
+  , (meh ++ "a", spawn (myTerminal ++ " -e alsamixer"))
+  , (meh ++ "e", spawn "emacsclient -c -a 'emacs'")
+  , (meh ++ "h", spawn (myTerminal ++ " -e htop"))
+  , (meh ++ "l", spawn "~/.config/rofi/powermenu.sh")
+  , (meh ++ "r", spawn "emacsclient -c -a 'emacs' --eval '(elfeed)'")
+  , (meh ++ "s", spawn (myTerminal ++ " -e spt"))
+  , (meh ++ "t", namedScratchpadAction myScratchPads "terminal") -- Scratchpad
+  , (meh ++ "v", spawn (myTerminal ++ " -e ncpamixer"))
   ]
 #+end_src
 * Hooks
 #+begin_src haskell
 myManageHook :: Query (Data.Monoid.Endo WindowSet)
 myManageHook = composeAll
-     [(className =? "Firefox-esr" <&&> resource =? "Dialog") --> doFloat] <+> namedScratchpadManageHook myScratchPads
+     [
+       (className =? "firefox" <&&> resource =? "Dialog") --> doFloat
+     , (className =? "Vlc" )     --> doFloat
+     , (className =? "zoom" )     --> doFloat
+     ] <+> namedScratchpadManageHook myScratchPads
 
 
 myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats $
@@ -171,22 +175,11 @@ monocle    = renamed [Replace "monocle"]  $ limitWindows 20 $ Full
 space      = renamed [Replace "space"]    $ limitWindows 4  $ spacingRaw True (Border 0 10 10 10) True (Border 10 10 10 10) True $ Mirror $ mkToggle (single MIRROR) $ mkToggle (single REFLECTX) $ mkToggle (single REFLECTY) $ OneBig (2/3) (2/3)
 floats     = renamed [Replace "floats"]   $ limitWindows 20 $ simplestFloat
 
-myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm
-                , NS "cmus" spawnCmus findCmus manageCmus
-                ]
-
+myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm]
     where
-    spawnTerm  = myTerminal ++  " -n scratchpad"
+    spawnTerm  = myTerminal ++  " --name scratchpad"
     findTerm   = resource =? "scratchpad"
     manageTerm = customFloating $ W.RationalRect l t w h
-                 where
-                 h = 0.9
-                 w = 0.9
-                 t = 0.95 -h
-                 l = 0.95 -w
-    spawnCmus  = myTerminal ++  " -n cmus 'cmus'"
-    findCmus   = resource =? "cmus"
-    manageCmus = customFloating $ W.RationalRect l t w h
                  where
                  h = 0.9
                  w = 0.9
@@ -203,13 +196,17 @@ myStartupHook = do
           spawnOnce "dunst &"
           spawnOnce "light-locker &"
 #+end_src
+* Workspaces
+#+begin_src haskell
+myWorkspaces = map show [1..9]
+#+end_src
 * Main Event
 #+begin_src haskell
 main = do
   xmproc <- spawnPipe "xmobar $HOME/.xmobarrc" -- Launch XMobar
   xmonad $ ewmh desktopConfig {
     manageHook = ( isFullscreen --> doFullFloat ) <+> myManageHook <+> manageHook desktopConfig <+> manageDocks
-   , logHook = dynamicLogWithPP xmobarPP
+   , logHook = dynamicLogWithPP . namedScratchpadFilterOutWorkspacePP $ xmobarPP
                         { ppOutput = \x -> hPutStrLn xmproc x
                         , ppCurrent = xmobarColor "#EBCB8B" "" . wrap "[" "]" -- Current workspace in xmobar
                         , ppVisible = xmobarColor "#ECEFF4" ""                -- Visible but not current workspace
@@ -220,13 +217,14 @@ main = do
                         , ppUrgent = xmobarColor "#BF616A" "" . wrap "!" "!"  -- Urgent workspace
                         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
                         }
-    , startupHook = myStartupHook
-    , terminal    = myTerminal
-    , modMask     = myModMask
+    , startupHook        = myStartupHook
+    , workspaces         = myWorkspaces
+    , terminal           = myTerminal
+    , modMask            = myModMask
     , layoutHook         = myLayoutHook
     , borderWidth        = myBorderWidth
     , normalBorderColor  = "#D8DEE9"
-    , focusedBorderColor = "#5E81AC"
+    , focusedBorderColor = "#A3BE8C"
 
   } `additionalKeysP` myAdditionalKeys
 
